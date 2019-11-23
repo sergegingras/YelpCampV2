@@ -1,38 +1,19 @@
 const   express = require("express"),
         app = express(),   
         bodyParser = require("body-parser"),
-        mongoose = require('mongoose');
+        mongoose = require('mongoose'),
+        Campground = require('./models/campground.js'),
+        seedDB = require("./seeds.js");
 
-mongoose.connect('mongodb://localhost:27017/yelp_camp',{useNewUrlParser: true, useUnifiedTopology: true});
+seedDB();
+
+mongoose.connect('mongodb://localhost:27017/yelp_campV3',{useNewUrlParser: true, useUnifiedTopology: true});
 
 
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine","ejs");
 
-
-//schema setup
-var campgroundSchema = new mongoose.Schema({
-    name: String,
-    image: String,
-    description: String
-});
-
-var Campground = mongoose.model("Campground",campgroundSchema);
-
-// Campground.create({
-//     name: "elora george",
-//     image: "https://pixabay.com/get/52e5d7414355ac14f6da8c7dda793f7f1636dfe2564c704c722e7fd49344c058_340.jpg",
-//         description: "THis is a huge granite hill, no bathrooms, no water, beautiful granite"
-// },(err,campground)=>{
-//     if(err){
-//         console.log(err);
-//     }else{
-//         console.log('newly created campground');
-//         console.log(campground);
-//     }
-//     }
-// );
 
 app.get("/",(req,res)=>{
     //this just sends data to the page. 
@@ -84,11 +65,13 @@ app.post("/campgrounds",(req,res)=>{
 app.get("/campgrounds/:id",function(req,res){
     //find the campground with provided id 
     //render show template with that campground
-    Campground.findById(req.params.id,(err,foundCampground)=>{
+    Campground.findById(req.params.id).populate("comments").exec((err,foundCampground)=>{
         if(err){
             console.log(err);
         }else{
          // render the show template
+         console.log(foundCampground);
+         console.log("hi serge");
          res.render("show.ejs",{campground: foundCampground});       
         }
     });
